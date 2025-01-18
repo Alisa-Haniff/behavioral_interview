@@ -7,7 +7,7 @@ import './App.css';
 function BehavioralPrep() {
   const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState([
-    { message: "Hello, I am ChatGPT!", sender: "ChatGPT", direction: "incoming" }
+    { message: "Hello, Let's get started on practing for your interview. Can you think of a situation from school, work, or your personal life that can be asked on an interview? (hints: group project, conflict with another person, or having a tight deadline) ", sender: "ChatGPT", direction: "incoming" }
   ]);
   const [randomQuestions, setRandomQuestions] = useState([]);
   const [showAnswer, setShowAnswer] = useState({});
