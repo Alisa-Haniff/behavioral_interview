@@ -1,13 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
-import { MainContainer, ChatContainer, MessageList, Message, MessageInput, TypingIndicator } from "@chatscope/chat-ui-kit-react";
-import { level1Questions, level2Questions, level3Questions } from './QuestionsData';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+import {
+  MainContainer,
+  ChatContainer,
+  MessageList,
+  Message,
+  MessageInput,
+  TypingIndicator,
+} from "@chatscope/chat-ui-kit-react";
+import { level1Questions, level2Questions, level3Questions } from "./QuestionsData";
+import "./App.css";
 
 function BehavioralPrep() {
   const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState([
-    { message: "Hello! Please describe a situation you experienced, wethere at work, school, or in your personal life that could possible be asked at an interview. (Hints: A conflict with someone, group project, or working on a deadline.", sender: "ChatGPT", direction: "incoming" }
+    {
+      message:
+        "Hello! Please describe a situation you experienced, whether at work, school, or in your personal life that could possibly be asked at an interview. (Hints: A conflict with someone, group project, or working on a deadline).",
+      sender: "ChatGPT",
+      direction: "incoming",
+    },
   ]);
   const [randomQuestions, setRandomQuestions] = useState([]);
   const [userSituation, setUserSituation] = useState("");
@@ -22,11 +34,12 @@ function BehavioralPrep() {
     return [
       { level: 1, question: level1 },
       { level: 2, question: level2 },
-      { level: 3, question: level3 }
+      { level: 3, question: level3 },
     ];
   };
 
   useEffect(() => {
+    // Generate new questions when the component is loaded
     setRandomQuestions(getRandomQuestionsByLevel());
   }, []);
 
@@ -53,35 +66,33 @@ function BehavioralPrep() {
 
     setTyping(false);
     setTimeout(() => {
-      generateAnswersForQuestions(situation, [...chatMessages, botResponse]);
+      generateAnswersForQuestions(situation);
     }, 1000);
   };
 
-  const generateAnswersForQuestions = async (situation, chatMessages) => {
+  const generateAnswersForQuestions = async (situation) => {
     setTyping(true);
-    const questionPrompts = randomQuestions.map((q) => `Question: ${q.question}\nAnswer based on the situation: "${situation}"`);
+    const questionPrompts = randomQuestions.map(
+      (q) => `Question: ${q.question}\nAnswer based on the situation: "${situation}"`
+    );
     const prompt = questionPrompts.join("\n\n");
     const response = await getChatGptResponse(prompt);
 
     const answersArray = response.split("\n\n");
-    const updatedAnswers = {};
-
-    randomQuestions.forEach((q, i) => {
-      updatedAnswers[q.question] = answersArray[i] || "No response generated.";
-    });
+    const updatedAnswers = randomQuestions.reduce((acc, q, i) => {
+      acc[q.question] = answersArray[i] || "No response generated.";
+      return acc;
+    }, {});
 
     setAnswers(updatedAnswers);
     setResponsesReady(true);
     setTyping(false);
-
-    const botResponse = { message: "Suggested answers for your questions are now ready!", sender: "ChatGPT", direction: "incoming" };
-    setMessages([...chatMessages, botResponse]);
   };
 
   const getChatGptResponse = async (prompt) => {
     const apiRequestBody = {
       model: "gpt-3.5-turbo",
-      messages: [{ role: "system", content: "Provide detailed but simple answers." }, { role: "user", content: prompt }]
+      messages: [{ role: "system", content: "Provide detailed but simple answers." }, { role: "user", content: prompt }],
     };
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -97,10 +108,28 @@ function BehavioralPrep() {
     return data.choices[0].message.content;
   };
 
-  const handleMorePractice = () => {
-    setRandomQuestions(getRandomQuestionsByLevel());
+  const handleMorePractice = async () => {
+    // Generate fresh questions and answers for a new session
+    const newRandomQuestions = getRandomQuestionsByLevel();
+    setRandomQuestions(newRandomQuestions);
     setAnswers({});
     setResponsesReady(false);
+
+    // Generate answers for the new questions
+    const questionPrompts = newRandomQuestions.map(
+      (q) => `Question: ${q.question}\nAnswer based on the situation: "${userSituation}"`
+    );
+    const prompt = questionPrompts.join("\n\n");
+    const response = await getChatGptResponse(prompt);
+
+    const answersArray = response.split("\n\n");
+    const updatedAnswers = newRandomQuestions.reduce((acc, q, i) => {
+      acc[q.question] = answersArray[i] || "No response generated.";
+      return acc;
+    }, {});
+
+    setAnswers(updatedAnswers);
+    setResponsesReady(true);
   };
 
   return (
@@ -138,30 +167,18 @@ function BehavioralPrep() {
         <p>Click on a card to view a suggested answer based on your situation.</p>
         <div>
           {randomQuestions.map((item, index) => (
-            <div
-              key={index}
-              className="question-card"
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '15px',
-                marginBottom: '10px',
-                background: '#f9f9f9',
-              }}
-              onClick={() => {
-                const answer = responsesReady
-                  ? answers[item.question] || "No response available."
-                  : "Responses are still being generated. Please wait.";
-                alert(`Suggested Answer: ${answer}`);
-              }}
-            >
-              <p><strong>Level {item.level}:</strong> {item.question}</p>
+            <div key={index} className="question-card">
+              <p>
+                <strong>Level {item.level}:</strong> {item.question}
+              </p>
+              {responsesReady && answers[item.question] && (
+                <div style={{ marginTop: "10px", color: "#666", fontStyle: "italic" }}>
+                  {answers[item.question]}
+                </div>
+              )}
             </div>
           ))}
-          <button
-            onClick={handleMorePractice}
-            className="more-practice-button"
-          >
+          <button onClick={handleMorePractice} className="more-practice-button">
             Additional Practice
           </button>
         </div>
