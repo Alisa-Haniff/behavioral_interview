@@ -7,51 +7,12 @@ import './App.css';
 function BehavioralPrep() {
   const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState([
-    { message: "Hello, Let's get started on practing for your interview. Can you think of a situation from school, work, or your personal life that can be asked on an interview? (hints: group project, conflict with another person, or having a tight deadline) ", sender: "ChatGPT", direction: "incoming" }
+    { message: "Hello! Please describe a situation you experienced that I can help structure using the STAR method.", sender: "ChatGPT", direction: "incoming" }
   ]);
   const [randomQuestions, setRandomQuestions] = useState([]);
-  const [showAnswer, setShowAnswer] = useState({});
-
-  const API_Key = import.meta.env.VITE_OPENAI_API_KEY; // Load from .env
-
-  const handleSend = async (message) => {
-    const newMessage = { message, sender: "user", direction: "outgoing" };
-    const newMessages = [...messages, newMessage];
-    setMessages(newMessages);
-    setTyping(true);
-    await processMessageToChatGpt(newMessages);
-  };
-
-  const processMessageToChatGpt = async (chatMessages) => {
-    const apiMessages = chatMessages.map((msg) => ({
-      role: msg.sender === "ChatGPT" ? "assistant" : "user",
-      content: msg.message,
-    }));
-
-    const apiRequestBody = {
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: "Explain all concepts like I am 10 years old." },
-        ...apiMessages,
-      ],
-    };
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${API_Key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(apiRequestBody),
-    });
-
-    const data = await response.json();
-    setMessages([
-      ...chatMessages,
-      { message: data.choices[0].message.content, sender: "ChatGPT", direction: "incoming" },
-    ]);
-    setTyping(false);
-  };
+  const [userSituation, setUserSituation] = useState("");
+  const [answers, setAnswers] = useState({});
+  const API_Key = import.meta.env.VITE_OPENAI_API_KEY;
 
   const getRandomQuestionsByLevel = () => {
     const level1 = level1Questions[Math.floor(Math.random() * level1Questions.length)];
@@ -68,13 +29,84 @@ function BehavioralPrep() {
     setRandomQuestions(getRandomQuestionsByLevel());
   }, []);
 
-  const toggleAnswer = (index) => {
-    setShowAnswer((prev) => ({ ...prev, [index]: !prev[index] }));
+  const handleSend = async (message) => {
+    const newMessage = { message, sender: "user", direction: "outgoing" };
+    const newMessages = [...messages, newMessage];
+    setMessages(newMessages);
+
+    if (!userSituation) {
+      // Save user's input as the situation
+      setUserSituation(message);
+      generateStarSolution(message, newMessages);
+    } else {
+      // Generate answers for the random questions
+      generateAnswersForQuestions(message, newMessages);
+    }
+  };
+
+  const generateStarSolution = async (situation, chatMessages) => {
+    setTyping(true);
+    const prompt = `
+      The user provided the following situation: "${situation}". 
+      Please provide a STAR-based response structure (Situation, Task, Action, Result) for this situation.
+    `;
+    const response = await getChatGptResponse(prompt);
+    const botResponse = { message: response, sender: "ChatGPT", direction: "incoming" };
+    setMessages([...chatMessages, botResponse]);
+
+    // Prompt user to generate answers for the random questions
+    setTyping(false);
+    setTimeout(() => {
+      const nextMessage = {
+        message: "Now let me help you answer some random interview questions based on your situation. Click on the cards below for suggestions!",
+        sender: "ChatGPT",
+        direction: "incoming"
+      };
+      setMessages((prev) => [...prev, nextMessage]);
+    }, 1000);
+  };
+
+  const generateAnswersForQuestions = async (situation, chatMessages) => {
+    setTyping(true);
+    const questionPrompts = randomQuestions.map((q) => `Question: ${q.question}\nAnswer based on the situation: "${situation}"`);
+    const prompt = questionPrompts.join("\n\n");
+    const response = await getChatGptResponse(prompt);
+    const answers = response.split("\n\n"); // Assuming GPT returns separate answers for each question
+
+    // Save the answers for each question
+    const updatedAnswers = {};
+    randomQuestions.forEach((q, i) => {
+      updatedAnswers[q.question] = answers[i] || "No response generated.";
+    });
+    setAnswers(updatedAnswers);
+
+    const botResponse = { message: "Here are suggestions for your random questions!", sender: "ChatGPT", direction: "incoming" };
+    setMessages([...chatMessages, botResponse]);
+    setTyping(false);
+  };
+
+  const getChatGptResponse = async (prompt) => {
+    const apiRequestBody = {
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "system", content: "Provide detailed but simple answers." }, { role: "user", content: prompt }]
+    };
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${API_Key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(apiRequestBody),
+    });
+
+    const data = await response.json();
+    return data.choices[0].message.content;
   };
 
   const handleMorePractice = () => {
     setRandomQuestions(getRandomQuestionsByLevel());
-    setShowAnswer({});
+    setAnswers({});
   };
 
   return (
@@ -84,7 +116,7 @@ function BehavioralPrep() {
         <div className="star-intro">
           <h2>STAR Method Overview</h2>
           <p>
-            Most companies prefer you to use the STAR Method when answering interview questions.
+            The STAR method helps structure your answers to behavioral questions.
             If you’re unfamiliar, here’s a video explanation:
           </p>
           <p>
@@ -103,31 +135,37 @@ function BehavioralPrep() {
                   <Message key={i} model={msg} />
                 ))}
               </MessageList>
-              <MessageInput placeholder="Type your brainstorming ideas here" onSend={handleSend} />
+              <MessageInput placeholder="Type your situation here" onSend={handleSend} />
             </ChatContainer>
           </MainContainer>
         </div>
 
+        <h2>Common Behavioral Questions</h2>
+        <p>Click on a card to view a suggested answer based on your situation.</p>
         <div>
-          <h2>Common Behavioral Questions by Level</h2>
-          <p>Click a card to view a sample answer.</p>
           {randomQuestions.map((item, index) => (
             <div
               key={index}
               className="question-card"
-              style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '15px', marginBottom: '10px', background: '#f9f9f9' }}
-              onClick={() => toggleAnswer(index)}
+              style={{
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                padding: '15px',
+                marginBottom: '10px',
+                background: '#f9f9f9',
+              }}
+              onClick={() => {
+                alert(`Suggested Answer: ${answers[item.question] || "Answer will appear after generating responses."}`);
+              }}
             >
               <p><strong>Level {item.level}:</strong> {item.question}</p>
-              {showAnswer[index] && (
-                <p className="answer-text">
-                  <strong>Sample Answer:</strong> Answer placeholder for Level {item.level}.
-                </p>
-              )}
             </div>
           ))}
-          <button onClick={handleMorePractice} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '4px' }}>
-            Click here for more practice
+          <button
+            onClick={handleMorePractice}
+            className="more-practice-button"
+          >
+            Additional Practice
           </button>
         </div>
       </div>
