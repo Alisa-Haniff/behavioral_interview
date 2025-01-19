@@ -1,47 +1,79 @@
-// TipsAndTricks.js
-import React from "react";
+import React from 'react';
 
-const TipsAndTricks = () => {
+const InterviewTips = () => {
   return (
-    <div>
-      <h1>Tips & Tricks</h1>
-      <h2>Write down your stories</h2>
-      <p>
-        First, work out which stories you’d like to tell. Make a list of key moments in your career (e.g. accomplishments, failures, team situations, leadership situations, etc.) that you can use to answer one or multiple questions. Take a look at your target company’s main attributes and their core values, then find at least one story from your past that exemplifies each one.
-      </p>
-      <p>
-        After you’ve finished your list, write out a story for each key moment in your career using the structure we've laid out in section 3. Be sure to emphasize your impact in each of these examples, quantify the results of your actions, and explain the lessons you learned from the experience.
-      </p>
-      <p>
-        Once you have a bank of stories, go through the questions in sections 1 and 2 and make sure you’d be able to answer all of them either by using one of the stories you’ve written directly, or by adapting it on the fly. If you identify any gaps, add stories to your bank until you’re comfortable you can cover all the questions listed in this article.
-      </p>
-      <h2>Practice your stories out loud</h2>
-      <p>
-        After you've written everything down, a great way to practice your answers is to interview yourself out loud. This may sound strange, but it will significantly improve the way you communicate during an interview.
-      </p>
-      <p>
-        You should be able to tell each story naturally, neither missing key details nor memorizing them word-for-word.
-      </p>
-      <p>
-        Play the role of both the candidate and the interviewer, asking questions and answering them, just like two people would in an interview. Trust us, it works.
-      </p>
-      <h2>Practice with peers</h2>
-      <p>
-        Practicing by yourself will only take you so far. By yourself, you can’t simulate thinking on your feet or the pressure of performing in front of a stranger. Plus, there are no unexpected follow-up questions and no feedback.
-      </p>
-      <p>
-        That’s why many candidates try to practice with friends or peers. If you have friends or peers who can do mock interviews with you, that's an option worth trying. It’s free, but be warned, you may come up against the following problems:
-      </p>
-      <ul>
-        <li>It’s hard to know if the feedback you get is accurate</li>
-        <li>They’re unlikely to have insider knowledge of interviews at your target company</li>
-        <li>On peer platforms, people often waste your time by not showing up</li>
-      </ul>
-      <p>
-        For those reasons, many candidates skip peer mock interviews and go straight to mock interviews with an expert.
-      </p>
+    <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+      <h1>Interview Tips and Tricks</h1>
+
+      <section>
+        <h2>1. Communicate Clearly and Concisely</h2>
+        <p>Good communication is key during an interview. Here’s how to ensure your answers are both clear and engaging:</p>
+        <ul>
+          <li>
+            <strong>Structure Your Answers:</strong> Use frameworks like <strong>STAR</strong> Method to organize your thoughts:
+            <ul>
+              <li><strong>Situation:</strong> Set the scene by describing a specific scenario.</li>
+              <li><strong>Task:</strong> Explain your role or responsibility in that situation.</li>
+              <li><strong>Action:</strong> Detail the steps you took to address the challenge.</li>
+              <li><strong>Result:</strong> Share the outcomes of your actions, including any measurable success.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Engage the Interviewer:</strong> Your tone, eye contact, smile, and posture convey confidence.
+            Practice maintaining a friendly yet professional demeanor to make a positive impression.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>2. Do Your Research</h2>
+        <p>Before your interview, take time to learn about the company and the job role.</p>
+        <ul>
+          <li><strong>Study the Company:</strong> Understand their mission, values, and culture. Look for news or updates about their recent achievements.</li>
+          <li><strong>Analyze the Job Description:</strong> Identify the key skills and qualifications required. Prepare examples that demonstrate your experience with these skills.</li>
+          <li><strong>Showcase Business Knowledge:</strong> Tailor your answers to reflect how you align with the company’s goals and culture.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. Craft a Compelling Narrative</h2>
+        <p>Your goal is to connect your past experiences to the job you’re applying for.</p>
+        <ul>
+          <li><strong>Highlight Relevant Experience:</strong> Think of unique situations from your past that demonstrate the skills needed for this role.</li>
+          <li><strong>Use the Power of Three:</strong> Focus on three key actions you took to achieve a result. Be specific and avoid vague language like “this” or “that.”</li>
+          <li><strong>Emphasize Your Strengths:</strong> Share stories that showcase your abilities and how they make you a great fit for the role.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>4. Focus on Results</h2>
+        <p>Employers value results-driven individuals. Be prepared to discuss both successes and challenges.</p>
+        <ul>
+          <li><strong>Quantify Successes:</strong> Use numbers or data to describe your achievements. For example, “I increased team productivity by 20%.”</li>
+          <li><strong>Discuss Failures Constructively:</strong> If asked about a time something didn’t work out, explain what you learned and how you applied that lesson to improve.</li>
+          <li><strong>Show Adaptability:</strong> Highlight how you used feedback to grow and deliver better results.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. Ask Insightful Questions</h2>
+        <p>Interviews are a two-way street. Asking thoughtful questions shows your interest and helps you evaluate if the role is right for you.</p>
+        <ul>
+          <li><strong>Follow Up on the Conversation:</strong> Reference something mentioned during the interview to show active listening.</li>
+          <li><strong>Learn About the Role:</strong> Ask about team dynamics, the company’s goals, or growth opportunities.</li>
+          <li><strong>Show Your Enthusiasm:</strong> Smile, bring positive energy, and be your authentic self.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Final Tip: Practice Makes Perfect</h2>
+        <p>
+          Write down examples for the STAR responses ahead of time and rehearse them.
+          This preparation will help you feel confident and prepared to tackle any question that comes your way.
+        </p>
+      </section>
     </div>
   );
 };
 
-export default TipsAndTricks;
+export default InterviewTips;

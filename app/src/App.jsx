@@ -7,18 +7,16 @@ import TipsAndTricks from "./TipsAndTricks";
 function App() {
   return (
     <Router>
-      <div style={{ display: 'flex' }}>
-        {/* Sidebar on the left */}
-        <Sidebar />
-        {/* Main content area */}
-        <div style={{ marginLeft: '200px', padding: '20px', flex: 1 }}>
-          <Routes>
-            {/* Define routes */}
-            <Route path="/" element={<BehavioralPrep />} />
-            <Route path="/tips-tricks" element={<TipsAndTricks />} />
-          </Routes>
-        </div>
-      </div>
+      <div style={{ display: "flex", flexDirection: "row", marginTop: "60px" }}>
+  <Sidebar />
+  <div className="content">
+    <Routes>
+      <Route path="/" element={<BehavioralPrep />} />
+      <Route path="/tips-tricks" element={<TipsAndTricks />} />
+    </Routes>
+  </div>
+</div>
+
     </Router>
   );
 }

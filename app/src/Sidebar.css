@@ -1,15 +1,22 @@
 /* Sidebar container */
+/* Sidebar container */
 .sidebar {
     position: fixed;
-    top: 60px; /* Accounts for the title/banner */
+    top: 60px; /* Leave space for the header */
     left: 0;
-    height: calc(100% - 60px); /* Adjust for the header height */
+    height: calc(100% - 60px); /* Adjust height to account for header */
     width: 180px; /* Sidebar width */
-    background-color: #00306e; /* Light background */
-    border-right: 1px solid #ddd;
+    background-color: #ffffff; /* Light background */
+    border-right: 1px solid #ddd; /* Subtle border */
     padding: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    overflow-y: auto; /* Scrollable if content exceeds height */
+  }
+  
+  .content {
+    margin-left: 200px; /* Adds a 20px gap (180px for sidebar + 20px extra) */
+    padding: 20px;
+    width: calc(100% - 200px); /* Adjusts width dynamically */
+    box-sizing: border-box; /* Ensures padding is included in width calculation */
   }
   
   /* Sidebar links list */
