@@ -1,0 +1,47 @@
+/* Sidebar container */
+.sidebar {
+    position: fixed;
+    top: 60px; /* Accounts for the title/banner */
+    left: 0;
+    height: calc(100% - 60px); /* Adjust for the header height */
+    width: 180px; /* Sidebar width */
+    background-color: #00306e; /* Light background */
+    border-right: 1px solid #ddd;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto; /* Scrollable if content exceeds height */
+  }
+  
+  /* Sidebar links list */
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Individual tab style */
+  .sidebar ul li {
+    margin: 15px 0;
+  }
+  
+  /* Link style with border and background */
+  .sidebar ul li a {
+    text-decoration: none; /* No underline */
+    color: #333; /* Dark text color */
+    font-weight: bold; /* Bold font */
+    display: block;
+    padding: 10px; /* Space inside the tabs */
+    border-radius: 8px; /* Rounded corners */
+    border: 3px solid #00306e; /* Light border */
+    background-color: #f6b72b; /* White background */
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  /* Hover effect for tabs */
+  .sidebar ul li a:hover {
+    background-color: #ced6df; /* Highlight color */
+    color: #2041ad; /* White text on hover */
+    border-color: #007bff; /* Border matches background */
+    box-shadow: 0 2px 5px rgba(160, 168, 211, 0.2); /* Slight shadow on hover */
+  }
+  

@@ -8,6 +8,8 @@ export const level1Questions = [
     "What are one of your weaknesses?",
     "What are your hobbies and what technologies are you into?",
     "Do you have a mentor? If so, how do you find it beneficial?",
+    "Tell me about a time you showed leadership",
+    "Tell me about a recent accomplishment",
   ];
   
   export const level2Questions = [
@@ -21,6 +23,8 @@ export const level1Questions = [
     "What are your strategies for staying productive and focused in a fast-paced environment?",
     "How do you manage feedback from others, especially if it's critical or constructive?",
     "How do you ensure that deadlines are met without sacrificing quality in your work?",
+    "Tell me about a time you worked well within a team",
+    "Tell me about a time you dealt with conflict on a team. How did you solve it?",
   ];
   
   export const level3Questions = [
@@ -30,5 +34,6 @@ export const level1Questions = [
     "How would you handle a situation where a project’s scope or direction changed mid-way through?",
     "How do you ensure that your work is aligned with the team's overall strategy or vision?",
     "How do you handle conflicts when they arise within a group?",
+    "Tell me about an interesting project you’ve worked on recently",
   ];
   
