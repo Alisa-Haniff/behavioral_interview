@@ -7,11 +7,12 @@ import './App.css';
 function BehavioralPrep() {
   const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState([
-    { message: "Hello! Please describe a situation you experienced that I can help structure using the STAR method.", sender: "ChatGPT", direction: "incoming" }
+    { message: "Hello! Please describe a situation you experienced, wethere at work, school, or in your personal life that could possible be asked at an interview. (Hints: A conflict with someone, group project, or working on a deadline.", sender: "ChatGPT", direction: "incoming" }
   ]);
   const [randomQuestions, setRandomQuestions] = useState([]);
   const [userSituation, setUserSituation] = useState("");
   const [answers, setAnswers] = useState({});
+  const [responsesReady, setResponsesReady] = useState(false);
   const API_Key = import.meta.env.VITE_OPENAI_API_KEY;
 
   const getRandomQuestionsByLevel = () => {
@@ -35,12 +36,8 @@ function BehavioralPrep() {
     setMessages(newMessages);
 
     if (!userSituation) {
-      // Save user's input as the situation
       setUserSituation(message);
-      generateStarSolution(message, newMessages);
-    } else {
-      // Generate answers for the random questions
-      generateAnswersForQuestions(message, newMessages);
+      await generateStarSolution(message, newMessages);
     }
   };
 
@@ -54,15 +51,9 @@ function BehavioralPrep() {
     const botResponse = { message: response, sender: "ChatGPT", direction: "incoming" };
     setMessages([...chatMessages, botResponse]);
 
-    // Prompt user to generate answers for the random questions
     setTyping(false);
     setTimeout(() => {
-      const nextMessage = {
-        message: "Now let me help you answer some random interview questions based on your situation. Click on the cards below for suggestions!",
-        sender: "ChatGPT",
-        direction: "incoming"
-      };
-      setMessages((prev) => [...prev, nextMessage]);
+      generateAnswersForQuestions(situation, [...chatMessages, botResponse]);
     }, 1000);
   };
 
@@ -71,18 +62,20 @@ function BehavioralPrep() {
     const questionPrompts = randomQuestions.map((q) => `Question: ${q.question}\nAnswer based on the situation: "${situation}"`);
     const prompt = questionPrompts.join("\n\n");
     const response = await getChatGptResponse(prompt);
-    const answers = response.split("\n\n"); // Assuming GPT returns separate answers for each question
 
-    // Save the answers for each question
+    const answersArray = response.split("\n\n");
     const updatedAnswers = {};
-    randomQuestions.forEach((q, i) => {
-      updatedAnswers[q.question] = answers[i] || "No response generated.";
-    });
-    setAnswers(updatedAnswers);
 
-    const botResponse = { message: "Here are suggestions for your random questions!", sender: "ChatGPT", direction: "incoming" };
-    setMessages([...chatMessages, botResponse]);
+    randomQuestions.forEach((q, i) => {
+      updatedAnswers[q.question] = answersArray[i] || "No response generated.";
+    });
+
+    setAnswers(updatedAnswers);
+    setResponsesReady(true);
     setTyping(false);
+
+    const botResponse = { message: "Suggested answers for your questions are now ready!", sender: "ChatGPT", direction: "incoming" };
+    setMessages([...chatMessages, botResponse]);
   };
 
   const getChatGptResponse = async (prompt) => {
@@ -107,6 +100,7 @@ function BehavioralPrep() {
   const handleMorePractice = () => {
     setRandomQuestions(getRandomQuestionsByLevel());
     setAnswers({});
+    setResponsesReady(false);
   };
 
   return (
@@ -155,7 +149,10 @@ function BehavioralPrep() {
                 background: '#f9f9f9',
               }}
               onClick={() => {
-                alert(`Suggested Answer: ${answers[item.question] || "Answer will appear after generating responses."}`);
+                const answer = responsesReady
+                  ? answers[item.question] || "No response available."
+                  : "Responses are still being generated. Please wait.";
+                alert(`Suggested Answer: ${answer}`);
               }}
             >
               <p><strong>Level {item.level}:</strong> {item.question}</p>
