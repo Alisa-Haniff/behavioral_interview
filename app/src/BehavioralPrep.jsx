@@ -70,24 +70,42 @@ function BehavioralPrep() {
     }, 1000);
   };
 
-  const generateAnswersForQuestions = async (situation) => {
+  const generateAnswersForQuestions = async (situation, chatMessages) => {
     setTyping(true);
-    const questionPrompts = randomQuestions.map(
-      (q) => `Question: ${q.question}\nAnswer based on the situation: "${situation}"`
-    );
+  
+    // Create prompts for each question to detect alignment
+    const questionPrompts = randomQuestions.map((q) => `
+      Question: "${q.question}"
+      User's situation: "${situation}"
+      If the situation aligns, provide a STAR-based answer. 
+      If it doesn't align, suggest: "Looks like your situation doesn't match the question. However, you could say something like this: <example response>".
+    `);
+  
     const prompt = questionPrompts.join("\n\n");
     const response = await getChatGptResponse(prompt);
-
+  
+    // Split responses into individual answers
     const answersArray = response.split("\n\n");
-    const updatedAnswers = randomQuestions.reduce((acc, q, i) => {
-      acc[q.question] = answersArray[i] || "No response generated.";
-      return acc;
-    }, {});
-
-    setAnswers(updatedAnswers);
-    setResponsesReady(true);
+    const updatedAnswers = {};
+  
+    // Map questions to their corresponding answers
+    randomQuestions.forEach((q, i) => {
+      updatedAnswers[q.question] = answersArray[i] || "No response generated.";
+    });
+  
+    setAnswers(updatedAnswers); // Store the answers
+    setResponsesReady(true); // Indicate that responses are ready
     setTyping(false);
+  
+    // Notify the user that answers are ready
+    const botResponse = {
+      message: "Suggested answers for your questions are now ready! Click on a card to view the answers.",
+      sender: "ChatGPT",
+      direction: "incoming"
+    };
+    setMessages([...chatMessages, botResponse]);
   };
+  
 
   const getChatGptResponse = async (prompt) => {
     const apiRequestBody = {
