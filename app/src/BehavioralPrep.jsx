@@ -15,33 +15,47 @@ function BehavioralPrep() {
   const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState([
     {
-      message:
-        "Hello! Please describe a situation you experienced, whether at work, school, or in your personal life that could possibly be asked at an interview. (Hints: A conflict with someone, group project, or working on a deadline).",
+      message: "Think of a time you achieved something. Please include as much details as possible.",
       sender: "ChatGPT",
       direction: "incoming",
     },
   ]);
   const [randomQuestions, setRandomQuestions] = useState([]);
-  const [userSituation, setUserSituation] = useState("");
   const [answers, setAnswers] = useState({});
-  const [responsesReady, setResponsesReady] = useState(false);
+  const [userSituation, setUserSituation] = useState("");
   const API_Key = import.meta.env.VITE_OPENAI_API_KEY;
 
-  const getRandomQuestionsByLevel = () => {
-    const level1 = level1Questions[Math.floor(Math.random() * level1Questions.length)];
-    const level2 = level2Questions[Math.floor(Math.random() * level2Questions.length)];
-    const level3 = level3Questions[Math.floor(Math.random() * level3Questions.length)];
-    return [
-      { level: 1, question: level1 },
-      { level: 2, question: level2 },
-      { level: 3, question: level3 },
-    ];
-  };
-
   useEffect(() => {
-    // Generate new questions when the component is loaded
-    setRandomQuestions(getRandomQuestionsByLevel());
+    setRandomQuestions(generateRandomQuestions());
   }, []);
+
+  const generateRandomQuestions = () => [
+    { level: 1, question: getRandomQuestion(level1Questions) },
+    { level: 2, question: getRandomQuestion(level2Questions) },
+    { level: 3, question: getRandomQuestion(level3Questions) },
+  ];
+
+  const getRandomQuestion = (questions) =>
+    questions[Math.floor(Math.random() * questions.length)];
+
+  const refreshQuestion = async (index, level) => {
+    const newQuestion = getRandomQuestion(
+      level === 1
+        ? level1Questions
+        : level === 2
+        ? level2Questions
+        : level3Questions
+    );
+
+    setRandomQuestions((prevQuestions) => {
+      const updatedQuestions = [...prevQuestions];
+      updatedQuestions[index] = { level, question: newQuestion };
+      return updatedQuestions;
+    });
+
+    // Regenerate answer for the refreshed question
+    await generateAnswerForSingleQuestion(newQuestion);
+  };
 
   const handleSend = async (message) => {
     const newMessage = { message, sender: "user", direction: "outgoing" };
@@ -63,91 +77,78 @@ function BehavioralPrep() {
     const response = await getChatGptResponse(prompt);
     const botResponse = { message: response, sender: "ChatGPT", direction: "incoming" };
     setMessages([...chatMessages, botResponse]);
-
     setTyping(false);
-    setTimeout(() => {
-      generateAnswersForQuestions(situation);
-    }, 1000);
+
+    // Generate answers for the common questions
+    await generateAnswersForQuestions(situation);
   };
 
-  const generateAnswersForQuestions = async (situation, chatMessages) => {
+  const generateAnswersForQuestions = async (situation) => {
     setTyping(true);
-  
-    // Create prompts for each question to detect alignment
+
+    // Create prompts for each question
     const questionPrompts = randomQuestions.map((q) => `
       Question: "${q.question}"
       User's situation: "${situation}"
       If the situation aligns, provide a STAR-based answer. 
       If it doesn't align, suggest: "Looks like your situation doesn't match the question. However, you could say something like this: <example response>".
     `);
-  
+
     const prompt = questionPrompts.join("\n\n");
     const response = await getChatGptResponse(prompt);
-  
-    // Split responses into individual answers
+
+    // Split responses and map them to questions
     const answersArray = response.split("\n\n");
     const updatedAnswers = {};
-  
-    // Map questions to their corresponding answers
     randomQuestions.forEach((q, i) => {
       updatedAnswers[q.question] = answersArray[i] || "No response generated.";
     });
-  
-    setAnswers(updatedAnswers); // Store the answers
-    setResponsesReady(true); // Indicate that responses are ready
-    setTyping(false);
-  
-    // Notify the user that answers are ready
-    const botResponse = {
-      message: "Suggested answers for your questions are now ready! Click on a card to view the answers.",
-      sender: "ChatGPT",
-      direction: "incoming"
-    };
-    setMessages([...chatMessages, botResponse]);
-  };
-  
-
-  const getChatGptResponse = async (prompt) => {
-    const apiRequestBody = {
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "system", content: "Provide detailed but simple answers." }, { role: "user", content: prompt }],
-    };
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${API_Key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(apiRequestBody),
-    });
-
-    const data = await response.json();
-    return data.choices[0].message.content;
-  };
-
-  const handleMorePractice = async () => {
-    // Generate fresh questions and answers for a new session
-    const newRandomQuestions = getRandomQuestionsByLevel();
-    setRandomQuestions(newRandomQuestions);
-    setAnswers({});
-    setResponsesReady(false);
-
-    // Generate answers for the new questions
-    const questionPrompts = newRandomQuestions.map(
-      (q) => `Question: ${q.question}\nAnswer based on the situation: "${userSituation}"`
-    );
-    const prompt = questionPrompts.join("\n\n");
-    const response = await getChatGptResponse(prompt);
-
-    const answersArray = response.split("\n\n");
-    const updatedAnswers = newRandomQuestions.reduce((acc, q, i) => {
-      acc[q.question] = answersArray[i] || "No response generated.";
-      return acc;
-    }, {});
 
     setAnswers(updatedAnswers);
-    setResponsesReady(true);
+    setTyping(false);
+  };
+
+  const generateAnswerForSingleQuestion = async (question) => {
+    setTyping(true);
+
+    const prompt = `
+      Question: "${question}"
+      User's situation: "${userSituation}"
+      If the situation aligns, provide a STAR-based answer. 
+      If it doesn't align, suggest: "Looks like your situation doesn't match the question. However, you could say something like this: <example response>".
+    `;
+    const response = await getChatGptResponse(prompt);
+
+    setAnswers((prevAnswers) => ({
+      ...prevAnswers,
+      [question]: response || "No response generated.",
+    }));
+
+    setTyping(false);
+  };
+
+  const getChatGptResponse = async (prompt) => {
+    try {
+      const apiRequestBody = {
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "system", content: "Provide detailed but simple answers." }, { role: "user", content: prompt }],
+      };
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${API_Key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(apiRequestBody),
+      });
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error("Error communicating with ChatGPT:", error);
+      return "Sorry, something went wrong while communicating with ChatGPT.";
+    }
   };
 
   return (
@@ -182,27 +183,54 @@ function BehavioralPrep() {
         </div>
 
         <h2>Common Behavioral Questions</h2>
-        <p>Click on a card to view a suggested answer based on your situation.</p>
         <div>
-          {randomQuestions.map((item, index) => (
-            <div key={index} className="question-card">
-              <p>
-                <strong>Level {item.level}:</strong> {item.question}
-              </p>
-              {responsesReady && answers[item.question] && (
-                <div style={{ marginTop: "10px", color: "#666", fontStyle: "italic" }}>
-                  {answers[item.question]}
-                </div>
-              )}
-            </div>
-          ))}
-          <button onClick={handleMorePractice} className="more-practice-button">
-            Additional Practice
-          </button>
-        </div>
+  {randomQuestions.map((item, index) => (
+    <div
+      key={index}
+      className="question-container"
+      style={{
+        marginBottom: "20px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+      }}
+    >
+      <div className="question-card" style={{ flex: 1 }}>
+        <p>
+          <strong>Level {item.level}:</strong> {item.question}
+        </p>
+        {answers[item.question] && (
+          <div style={{ marginTop: "10px", color: "#666", fontStyle: "italic" }}>
+            {answers[item.question]}
+          </div>
+        )}
       </div>
+      <button
+        onClick={() => refreshQuestion(index, item.level)}
+        className="refresh-button"
+        style={{
+          marginLeft: "10px",
+          cursor: "pointer",
+          background: "none",
+          border: "1px solid #ddd",
+          padding: "5px 10px",
+          color: "#007BFF",
+          borderRadius: "5px",
+        }}
+      >
+        🔄
+      </button>
     </div>
+  ))}
+</div>
+
+</div>
+
+      </div>
+    
   );
 }
 
 export default BehavioralPrep;
+
+

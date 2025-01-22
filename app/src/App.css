@@ -112,3 +112,16 @@
     font-size: 1.5rem; /* Slightly smaller font size */
   }
 }
+.refresh-button {
+  font-size: 14px;
+  color: #007BFF;
+  text-decoration: underline;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.refresh-button:hover {
+  color: #0056b3;
+}
