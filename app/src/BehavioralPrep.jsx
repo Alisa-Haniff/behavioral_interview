@@ -11,8 +11,12 @@ import {
 import { level1Questions, level2Questions, level3Questions } from "./QuestionsData";
 import "./App.css";
 
+// The main component for the behavioral preparation app
 function BehavioralPrep() {
+  // State to manage typing indicator
   const [typing, setTyping] = useState(false);
+  
+  // State to store chat messages
   const [messages, setMessages] = useState([
     {
       message: "Think of a time you achieved something. Please include as much details as possible.",
@@ -20,24 +24,36 @@ function BehavioralPrep() {
       direction: "incoming",
     },
   ]);
+
+  // State to store random questions for behavioral interview practice
   const [randomQuestions, setRandomQuestions] = useState([]);
+  
+  // State to store user-provided answers for the questions
   const [answers, setAnswers] = useState({});
+  
+  // State to store the user's input situation
   const [userSituation, setUserSituation] = useState("");
+  
+  // API key for OpenAI (loaded from environment variables)
   const API_Key = import.meta.env.VITE_OPENAI_API_KEY;
 
+  // Generate random questions when the component first loads
   useEffect(() => {
     setRandomQuestions(generateRandomQuestions());
   }, []);
 
+  // Generates random questions for all levels
   const generateRandomQuestions = () => [
     { level: 1, question: getRandomQuestion(level1Questions) },
     { level: 2, question: getRandomQuestion(level2Questions) },
     { level: 3, question: getRandomQuestion(level3Questions) },
   ];
 
+  // Selects a random question from a given list
   const getRandomQuestion = (questions) =>
     questions[Math.floor(Math.random() * questions.length)];
 
+  // Refreshes a question at a specific index and regenerates the associated answer
   const refreshQuestion = async (index, level) => {
     const newQuestion = getRandomQuestion(
       level === 1
@@ -47,27 +63,30 @@ function BehavioralPrep() {
         : level3Questions
     );
 
+    // Update the question list with the new question
     setRandomQuestions((prevQuestions) => {
       const updatedQuestions = [...prevQuestions];
       updatedQuestions[index] = { level, question: newQuestion };
       return updatedQuestions;
     });
 
-    // Regenerate answer for the refreshed question
+    // Regenerate the answer for the refreshed question
     await generateAnswerForSingleQuestion(newQuestion);
   };
 
+  // Handles sending a message and processes the user's situation
   const handleSend = async (message) => {
     const newMessage = { message, sender: "user", direction: "outgoing" };
     const newMessages = [...messages, newMessage];
     setMessages(newMessages);
 
     if (!userSituation) {
-      setUserSituation(message);
-      await generateStarSolution(message, newMessages);
+      setUserSituation(message); // Store the user's situation
+      await generateStarSolution(message, newMessages); // Generate a STAR-based response
     }
   };
 
+  // Generates a STAR-based response for the user's situation
   const generateStarSolution = async (situation, chatMessages) => {
     setTyping(true);
     const prompt = `
@@ -79,14 +98,15 @@ function BehavioralPrep() {
     setMessages([...chatMessages, botResponse]);
     setTyping(false);
 
-    // Generate answers for the common questions
+    // Generate answers for the common behavioral questions
     await generateAnswersForQuestions(situation);
   };
 
+  // Generates STAR-based answers for the random questions
   const generateAnswersForQuestions = async (situation) => {
     setTyping(true);
 
-    // Create prompts for each question
+    // Create a prompt for each question
     const questionPrompts = randomQuestions.map((q) => `
       Question: "${q.question}"
       User's situation: "${situation}"
@@ -97,7 +117,7 @@ function BehavioralPrep() {
     const prompt = questionPrompts.join("\n\n");
     const response = await getChatGptResponse(prompt);
 
-    // Split responses and map them to questions
+    // Map the responses to the respective questions
     const answersArray = response.split("\n\n");
     const updatedAnswers = {};
     randomQuestions.forEach((q, i) => {
@@ -108,6 +128,7 @@ function BehavioralPrep() {
     setTyping(false);
   };
 
+  // Generates an answer for a single question
   const generateAnswerForSingleQuestion = async (question) => {
     setTyping(true);
 
@@ -119,6 +140,7 @@ function BehavioralPrep() {
     `;
     const response = await getChatGptResponse(prompt);
 
+    // Update the answers with the new response
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
       [question]: response || "No response generated.",
@@ -127,6 +149,7 @@ function BehavioralPrep() {
     setTyping(false);
   };
 
+  // Communicates with ChatGPT API to get a response for the given prompt
   const getChatGptResponse = async (prompt) => {
     try {
       const apiRequestBody = {
@@ -151,10 +174,12 @@ function BehavioralPrep() {
     }
   };
 
+  // Component UI rendering
   return (
     <div className="App">
       <div className="category-title">Prepare for Your Behavioral Interview</div>
       <div className="content-container">
+        {/* STAR Method Overview Section */}
         <div className="star-intro">
           <h2>STAR Method Overview</h2>
           <p>
@@ -168,6 +193,7 @@ function BehavioralPrep() {
           </p>
         </div>
 
+        {/* Chat Section */}
         <h2>Brainstorming Collaboration For An Interview</h2>
         <div style={{ position: "relative", height: "400px", width: "100%" }}>
           <MainContainer>
@@ -182,6 +208,7 @@ function BehavioralPrep() {
           </MainContainer>
         </div>
 
+        {/* Common Behavioral Questions Section */}
         <h2>Common Behavioral Questions</h2>
         <div>
   {randomQuestions.map((item, index) => (
@@ -192,7 +219,7 @@ function BehavioralPrep() {
         marginBottom: "20px",
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "flex-start",
+        alignItems: "center",
       }}
     >
       <div className="question-card" style={{ flex: 1 }}>
@@ -205,32 +232,46 @@ function BehavioralPrep() {
           </div>
         )}
       </div>
-      <button
-        onClick={() => refreshQuestion(index, item.level)}
-        className="refresh-button"
-        style={{
-          marginLeft: "10px",
-          cursor: "pointer",
-          background: "none",
-          border: "1px solid #ddd",
-          padding: "5px 10px",
-          color: "#007BFF",
-          borderRadius: "5px",
-        }}
-      >
-        🔄
-      </button>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <button
+          onClick={() => refreshQuestion(index, item.level)}
+          className="refresh-button"
+          style={{
+            marginLeft: "10px",
+            cursor: "pointer",
+            background: "linear-gradient(90deg, #007BFF, #0056b3)",
+            border: "none",
+            padding: "7px 15px",
+            color: "white",
+            borderRadius: "5px",
+            fontWeight: "bold",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          🔄 Refresh to generate a new question
+        </button>
+        <span
+          style={{
+            marginLeft: "15px",
+            fontSize: "14px",
+            color: "#444",
+            fontStyle: "italic",
+            background: "#f8f9fa",
+            padding: "5px 10px",
+            borderRadius: "5px",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+        </span>
+      </div>
     </div>
   ))}
 </div>
 
-</div>
 
       </div>
-    
+    </div>
   );
 }
 
 export default BehavioralPrep;
-
-
